@@ -1,18 +1,19 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { ChevronLeft, ChevronRight, Search, Play, Menu, X } from "lucide-react";
 import Image from "next/image";
 
 export default function Home() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(true); // Video play/pause state
 
   const slides = [
     {
       title: "Get Ready for New Adidas Bands",
       description:
         "Adidas tracks all begin with a starting gate and end with a finish line, but everything in between varies from track to track. Because no two tracks are alike, this action sport keeps you on your toes wherever you are racing.",
-      video: "https://www.w3schools.com/html/mov_bbb.mp4",
+      video: "/football.mp4",
       bgImage:
         "https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=1200",
     },
@@ -20,7 +21,7 @@ export default function Home() {
       title: "Train Like a Champion",
       description:
         "Experience world-class training facilities and cutting-edge technology. Our tracks are designed to help you achieve your personal best and push beyond your limits.",
-      video: "https://www.w3schools.com/html/movie.mp4",
+      video: "/football2.mp4",
       bgImage:
         "https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=1200",
     },
@@ -28,11 +29,39 @@ export default function Home() {
       title: "Join the Adidas Community",
       description:
         "Connect with athletes from around the world. Share your journey, compete in events, and become part of something bigger than yourself.",
-      video: "https://www.w3schools.com/html/mov_bbb.mp4",
+      video: "/football3.mp4",
       bgImage:
         "https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=1200",
     },
   ];
+
+  // Video refs for each slide
+  const videoRefs = useRef([]);
+
+  // Ensure we have refs for all slides
+  useEffect(() => {
+    videoRefs.current = slides.map((_, i) => videoRefs.current[i] ?? React.createRef());
+  }, [slides.length]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      nextSlide();
+    }, 10000); 
+    return () => clearInterval(interval);
+  }, [currentSlide]);
+
+  useEffect(() => {
+    videoRefs.current.forEach((ref, i) => {
+      if (ref && ref.current) {
+        if (i === currentSlide && isPlaying) {
+          ref.current.play();
+        } else {
+          ref.current.pause();
+          ref.current.currentTime = 0;
+        }
+      }
+    });
+  }, [currentSlide, isPlaying]);
 
   const nextSlide = () => {
     setCurrentSlide((prev) => (prev + 1) % slides.length);
@@ -46,8 +75,20 @@ export default function Home() {
     setCurrentSlide(index);
   };
 
+  const togglePlayPause = () => {
+    const currentVideo = videoRefs.current[currentSlide]?.current;
+    if (currentVideo) {
+      if (isPlaying) {
+        currentVideo.pause();
+      } else {
+        currentVideo.play();
+      }
+      setIsPlaying(!isPlaying);
+    }
+  };
+
   return (
-    <div className="">
+    <div className="min-h-screen">
       <div className="bg-gray-100 text-gray-700 text-center py-2 px-4 text-xs sm:text-sm">
         <span className="hidden sm:inline">LIVE RACE STREAM FROM GATOR NATIONALS IN SARASOTA, FL / </span>
         <span className="sm:hidden">LIVE STREAM / </span>
@@ -59,7 +100,7 @@ export default function Home() {
       <header className="bg-[#0e4a2f] text-white">
         <div className="max-w-7xl mx-auto flex justify-between items-center py-3 sm:py-4 px-4 sm:px-6">
           <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-wider">adidas</h1>
-          
+         
           <div className="hidden md:flex gap-4">
             <button
               className="bg-[#2a8b4a] hover:bg-[#3aa05a] transition-colors py-2 px-6 lg:px-8 text-sm font-bold uppercase rounded"
@@ -78,7 +119,6 @@ export default function Home() {
               Account
             </button>
           </div>
-
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             className="md:hidden text-white p-2"
@@ -104,17 +144,15 @@ export default function Home() {
                   <span className="relative z-10 h-full flex items-center px-3 lg:px-6 transition-colors duration-300">
                     {item}
                   </span>
-
                   <span
                     className="absolute inset-0 bg-[#2e844a] opacity-0 group-hover:opacity-100 transition-opacity duration-300"
                     style={{
-                      clipPath: "polygon(8% 0%, 100% 0%, 94% 100%, 0% 100%)",
-                    }}
+                    clipPath: "polygon(8% 0%, 100% 0%, 94% 100%, 0% 100%)",
+                  }}
                   />
                 </li>
               ))}
             </ul>
-
             <div className="relative">
               <input
                 className="bg-[#0e4a2f] border border-gray-600 py-2 px-4 pr-10 text-white placeholder-gray-400 focus:outline-none focus:border-emerald-400 w-48 lg:w-64 text-sm uppercase"
@@ -152,7 +190,6 @@ export default function Home() {
                 </li>
               ))}
             </ul>
-
             <div className="p-4 border-t border-[#1a5c3a]">
               <div className="relative">
                 <input
@@ -166,7 +203,6 @@ export default function Home() {
                 />
               </div>
             </div>
-
             <div className="flex flex-col gap-3 p-4 border-t border-[#1a5c3a]">
               <button
                 className="bg-[#2a8b4a] hover:bg-[#3aa05a] transition-colors py-3 px-6 text-sm font-bold uppercase rounded"
@@ -197,7 +233,6 @@ export default function Home() {
             </h1>
           </div>
         </div>
-
         <div
           className="hidden sm:flex absolute inset-y-0 right-0 w-[50%] md:w-[40%] bg-white flex-col items-center justify-center"
           style={{
@@ -209,67 +244,81 @@ export default function Home() {
           </p>
           <div className="flex justify-center items-center">
             <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-black">Reebok</h1>
-            <Image src="/reebok.jpg" width={100} height={100} />
+            <Image src="/reebok.jpg" width={100} height={100} alt="Reebok" />
           </div>
         </div>
       </div>
 
-      <div className="relative h-[400px] sm:h-[500px] md:h-[600px] overflow-hidden">
-        {slides.map((slide, index) => (
+      <div className="relative h-[400px] sm:h-[500 Cpx] md:h-[600px] overflow-hidden">
+        <div className="relative w-full h-full">
           <div
-            key={index}
-            className={`absolute inset-0 transition-opacity duration-700 ${
-              index === currentSlide
-                ? "opacity-100"
-                : "opacity-0 pointer-events-none"
-            }`}
+            className="flex h-full transition-transform duration-700 ease-in-out"
+            style={{ transform: `translateX(-${currentSlide * 100}%)` }}
           >
-            <div
-              className="absolute inset-0 bg-cover bg-center"
-              style={{
-                backgroundImage: `linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('/shoes-graound.jpg')`,
-              }}
-            />
+            {slides.map((slide, index) => (
+              <div key={index} className="w-full h-full flex-shrink-0 relative">
+                <div
+                  className="absolute inset-0 bg-cover bg-center"
+                  style={{
+                    backgroundImage: `linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('/shoes-graound.jpg')`,
+                  }}
+                />
+                <div className="absolute inset-0 bg-black/40" />
 
-            <div className="absolute inset-0 bg-black/40" />
+                <div className="relative h-full max-w-7xl mx-auto px-4 sm:px-6 md:px-8 flex items-center">
+                  <div className="w-full lg:w-1/2 text-white z-10">
+                    <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-3 sm:mb-4 md:mb-6 leading-tight uppercase">
+                      {slide.title}
+                    </h2>
+                    <p className="text-sm sm:text-base md:text-lg lg:text-xl leading-relaxed max-w-2xl opacity-90">
+                      {slide.description}
+                    </p>
+                  </div>
 
-            <div className="relative h-full max-w-7xl mx-auto px-4 sm:px-6 md:px-8 flex items-center">
-              <div className="w-full lg:w-1/2 text-white z-10">
-                <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-3 sm:mb-4 md:mb-6 leading-tight uppercase">
-                  {slide.title}
-                </h2>
-                <p className="text-sm sm:text-base md:text-lg lg:text-xl leading-relaxed max-w-2xl opacity-90">
-                  {slide.description}
-                </p>
-              </div>
+                  <div className="absolute right-4 sm:right-8 top-1/2 -translate-y-1/2 hidden xl:block">
+                    <div className="relative group">
+                      <video
+                        ref={videoRefs.current[index]}
+                        className="w-[400px] xl:w-[500px] h-[240px] xl:h-[300px] object-cover rounded-lg shadow-2xl"
+                        autoPlay
+                        muted
+                        loop
+                        playsInline
+                      >
+                        <source src={slide.video} type="video/mp4" />
+                        Your browser does not support the video tag.
+                      </video>
 
-              <div className="absolute right-4 sm:right-8 top-1/2 -translate-y-1/2 hidden xl:block">
-                <div className="relative group">
-                  <video
-                    className="w-[400px] xl:w-[500px] h-[240px] xl:h-[300px] object-cover rounded-lg shadow-2xl"
-                    autoPlay
-                    muted
-                    loop
-                    playsInline
-                  >
-                    <source src={slide.video} type="video/mp4" />
-                    Your browser does not support the video tag.
-                  </video>
-
-                  <div className="absolute inset-0 flex items-center justify-center bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg cursor-pointer">
-                    <div className="bg-white/90 rounded-full p-4 md:p-6">
-                      <Play
-                        className="w-8 h-8 md:w-12 md:h-12 text-[#0e4a2f]"
-                        fill="currentColor"
-                      />
+                      <button
+                        onClick={togglePlayPause}
+                        className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black/30 rounded-lg"
+                      >
+                        <div className="bg-white/90 p-4 rounded-full hover:bg-white transition-colors">
+                          {isPlaying ? (
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              strokeWidth={2}
+                              stroke="currentColor"
+                              className="w-12 h-12 text-[#0e4a2f]"
+                            >
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M10 9v6m4-6v6" />
+                            </svg>
+                          ) : (
+                            <Play size={48} className="text-[#0e4a2f]" />
+                          )}
+                        </div>
+                      </button>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
+            ))}
           </div>
-        ))}
+        </div>
 
+        {/* Navigation Arrows */}
         <button
           onClick={prevSlide}
           className="absolute left-2 sm:left-4 md:left-8 top-1/2 -translate-y-1/2 hover:bg-white/40 backdrop-blur-sm p-2 sm:p-3 md:p-4 rounded-full transition-all z-20"
@@ -283,6 +332,7 @@ export default function Home() {
           <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 text-white" />
         </button>
 
+        {/* Dots */}
         <div className="absolute bottom-4 sm:bottom-6 md:bottom-8 left-1/2 -translate-x-1/2 flex gap-2 sm:gap-3 z-20">
           {slides.map((_, index) => (
             <button
@@ -296,8 +346,9 @@ export default function Home() {
             />
           ))}
         </div>
+
       </div>
-      
+     
       <div className="h-[40px] sm:h-[50px] md:h-[60px] bg-[#10372b]"></div>
     </div>
   );
