@@ -1,12 +1,11 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
-import { ChevronLeft, ChevronRight, Search, Play, Menu, X } from "lucide-react";
-import Image from "next/image";
+import { ChevronLeft, ChevronRight, Search, Play, Menu, X, Pause } from "lucide-react";
 
 export default function Home() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [isPlaying, setIsPlaying] = useState(true); // Video play/pause state
+  const [isPlaying, setIsPlaying] = useState(true);
 
   const slides = [
     {
@@ -35,33 +34,7 @@ export default function Home() {
     },
   ];
 
-  // Video refs for each slide
   const videoRefs = useRef([]);
-
-  // Ensure we have refs for all slides
-  useEffect(() => {
-    videoRefs.current = slides.map((_, i) => videoRefs.current[i] ?? React.createRef());
-  }, [slides.length]);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      nextSlide();
-    }, 10000); 
-    return () => clearInterval(interval);
-  }, [currentSlide]);
-
-  useEffect(() => {
-    videoRefs.current.forEach((ref, i) => {
-      if (ref && ref.current) {
-        if (i === currentSlide && isPlaying) {
-          ref.current.play();
-        } else {
-          ref.current.pause();
-          ref.current.currentTime = 0;
-        }
-      }
-    });
-  }, [currentSlide, isPlaying]);
 
   const nextSlide = () => {
     setCurrentSlide((prev) => (prev + 1) % slides.length);
@@ -75,15 +48,36 @@ export default function Home() {
     setCurrentSlide(index);
   };
 
+  useEffect(() => {
+    const interval = setInterval(() => {
+      nextSlide();
+    }, 10000);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    videoRefs.current.forEach((video, i) => {
+      if (video) {
+        if (i === currentSlide && isPlaying) {
+          video.play().catch(err => console.log("Play error:", err));
+        } else {
+          video.pause();
+          video.currentTime = 0;
+        }
+      }
+    });
+  }, [currentSlide, isPlaying]);
+
   const togglePlayPause = () => {
-    const currentVideo = videoRefs.current[currentSlide]?.current;
+    const currentVideo = videoRefs.current[currentSlide];
     if (currentVideo) {
       if (isPlaying) {
         currentVideo.pause();
+        setIsPlaying(false);
       } else {
-        currentVideo.play();
+        currentVideo.play().catch(err => console.log("Play error:", err));
+        setIsPlaying(true);
       }
-      setIsPlaying(!isPlaying);
     }
   };
 
@@ -244,12 +238,12 @@ export default function Home() {
           </p>
           <div className="flex justify-center items-center">
             <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-black">Reebok</h1>
-            <Image src="/reebok.jpg" width={100} height={100} alt="Reebok" />
+            <img src="/reebok.jpg" width={100} height={100} alt="Reebok" className="w-24 h-24 object-contain" />
           </div>
         </div>
       </div>
 
-      <div className="relative h-[400px] sm:h-[500 Cpx] md:h-[600px] overflow-hidden">
+      <div className="relative h-[400px] sm:h-[500px] md:h-[600px] overflow-hidden">
         <div className="relative w-full h-full">
           <div
             className="flex h-full transition-transform duration-700 ease-in-out"
@@ -264,7 +258,6 @@ export default function Home() {
                   }}
                 />
                 <div className="absolute inset-0 bg-black/40" />
-
                 <div className="relative h-full max-w-7xl mx-auto px-4 sm:px-6 md:px-8 flex items-center">
                   <div className="w-full lg:w-1/2 text-white z-10">
                     <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-3 sm:mb-4 md:mb-6 leading-tight uppercase">
@@ -274,13 +267,11 @@ export default function Home() {
                       {slide.description}
                     </p>
                   </div>
-
                   <div className="absolute right-4 sm:right-8 top-1/2 -translate-y-1/2 hidden xl:block">
                     <div className="relative group">
                       <video
-                        ref={videoRefs.current[index]}
+                        ref={(el) => (videoRefs.current[index] = el)}
                         className="w-[400px] xl:w-[500px] h-[240px] xl:h-[300px] object-cover rounded-lg shadow-2xl"
-                        autoPlay
                         muted
                         loop
                         playsInline
@@ -288,25 +279,15 @@ export default function Home() {
                         <source src={slide.video} type="video/mp4" />
                         Your browser does not support the video tag.
                       </video>
-
                       <button
                         onClick={togglePlayPause}
                         className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black/30 rounded-lg"
                       >
                         <div className="bg-white/90 p-4 rounded-full hover:bg-white transition-colors">
                           {isPlaying ? (
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              strokeWidth={2}
-                              stroke="currentColor"
-                              className="w-12 h-12 text-[#0e4a2f]"
-                            >
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M10 9v6m4-6v6" />
-                            </svg>
+                            <Pause className="w-12 h-12 text-[#0e4a2f]" />
                           ) : (
-                            <Play size={48} className="text-[#0e4a2f]" />
+                            <Play className="w-12 h-12 text-[#0e4a2f]" />
                           )}
                         </div>
                       </button>
@@ -318,7 +299,6 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Navigation Arrows */}
         <button
           onClick={prevSlide}
           className="absolute left-2 sm:left-4 md:left-8 top-1/2 -translate-y-1/2 hover:bg-white/40 backdrop-blur-sm p-2 sm:p-3 md:p-4 rounded-full transition-all z-20"
@@ -332,7 +312,6 @@ export default function Home() {
           <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 text-white" />
         </button>
 
-        {/* Dots */}
         <div className="absolute bottom-4 sm:bottom-6 md:bottom-8 left-1/2 -translate-x-1/2 flex gap-2 sm:gap-3 z-20">
           {slides.map((_, index) => (
             <button
@@ -346,7 +325,6 @@ export default function Home() {
             />
           ))}
         </div>
-
       </div>
      
       <div className="h-[40px] sm:h-[50px] md:h-[60px] bg-[#10372b]"></div>
