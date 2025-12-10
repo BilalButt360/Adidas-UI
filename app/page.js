@@ -47,7 +47,7 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen">
+    <div className="">
       <div className="bg-gray-100 text-gray-700 text-center py-2 px-4 text-xs sm:text-sm">
         <span className="hidden sm:inline">LIVE RACE STREAM FROM GATOR NATIONALS IN SARASOTA, FL / </span>
         <span className="sm:hidden">LIVE STREAM / </span>
