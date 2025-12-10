@@ -233,7 +233,7 @@ export default function Home() {
             clipPath: "polygon(17% 0%, 100% 0%, 100% 100%, 10% 100%)",
           }}
         >
-          <p className="text-xs md:text-sm font-bold text-[#0e9c44] uppercase tracking-wider relative top-5">
+          <p className="text-xs md:text-sm font-bold text-[#0e9c44] uppercase tracking-wider relative top-8">
             Partnership by
           </p>
           <div className="flex justify-center items-center">
