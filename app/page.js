@@ -32,6 +32,14 @@ export default function Home() {
       bgImage:
         "https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=1200",
     },
+    {
+      title: "Join the Adidas Community",
+      description:
+        "Connect with athletes from around the world. Share your journey, compete in events, and become part of something bigger than yourself.",
+      video: "/football4.mp4",
+      bgImage:
+        "https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=1200",
+    },
   ];
 
   const videoRefs = useRef([]);
@@ -317,9 +325,9 @@ export default function Home() {
             <button
               key={index}
               onClick={() => goToSlide(index)}
-              className={`w-2 h-2 sm:w-3 sm:h-3 rounded-full transition-all ${
+              className={`w-2 h-2 sm:w-6 sm:h-2 transition-all ${
                 index === currentSlide
-                  ? "bg-white w-6 sm:w-8"
+                  ? "bg-white w-6 sm:w-6"
                   : "bg-white/60 hover:bg-white/80"
               }`}
             />
